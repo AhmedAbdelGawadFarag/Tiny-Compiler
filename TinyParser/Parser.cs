@@ -10,7 +10,7 @@ namespace Tiny_Compiler
     public class Node
     {
         public List<Node> Children = new List<Node>();
-        
+
         public string Name;
         public Node(string N)
         {
@@ -21,8 +21,8 @@ namespace Tiny_Compiler
     {
         int InputPointer = 0;
         List<Token> TokenStream;
-        public  Node root;
-        
+        public Node root;
+
         public Node StartParsing(List<Token> TokenStream)
         {
             this.InputPointer = 0;
@@ -34,14 +34,188 @@ namespace Tiny_Compiler
         Node Program()
         {
             Node program = new Node("Program");
-            program.Children.Add(Header());
-            program.Children.Add(DeclSec());
-            program.Children.Add(Block());
-            program.Children.Add(match(Token_Class.ElseIf));
-            MessageBox.Show("Success");
+            program.Children.Add(FunDecls());
+            program.Children.Add(MainFun());
             return program;
         }
-        
+        Node FunDecls()
+        {
+            Node n = new Node("FunDecls");
+
+            n.Children.Add(FunDecl());
+            n.Children.Add(FunDelcsDash());
+
+            return n;
+        }
+
+        private Node FunDelcsDash()
+        {
+            Node n = new Node("FunDeclsDash");
+
+            Node Decl = FunDecl();
+            if (Decl != null)
+            {
+                n.Children.Add(Decl);
+                n.Children.Add(FunDelcsDash());
+            }
+            // if null means epsilon just return the node
+
+            return n;
+        }
+
+        private Node FunDecl()
+        {
+            Node n = new Node("FunDecl");
+
+            Node Dt = DataType();
+
+            if (Dt == null) return null;
+
+            n.Children.Add(Dt);
+            n.Children.Add(match(Token_Class.Identifier));
+            n.Children.Add(match(Token_Class.LeftParentheses));
+
+            n.Children.Add(Params());
+
+            n.Children.Add(match(Token_Class.RightParentheses));
+
+            //n.Children.Add(CompoundStmts());
+
+            return n;
+        }
+
+        private Node CompoundStmts()
+        {
+            Node n = new Node("CompundStatments");
+
+            n.Children.Add(match(Token_Class.LeftBraces));
+
+            n.Children.Add(Statments());
+
+            n.Children.Add(match(Token_Class.RightBraces));
+
+            return n;
+        }
+
+        private Node Statments()
+        {
+            Node n = new Node("Statments");
+
+            n.Children.Add(Statment());
+
+            return null;
+        }
+
+        private Node Statment()
+        {
+            Node n = new Node("Statment");
+
+            if (GetTokenType() == Token_Class.Read)
+            {
+                
+            }else if (GetTokenType()==Token_Class.Write)
+            {
+
+            }
+
+            return null;
+        }
+
+        private Node Params()
+        {
+            Node n = new Node("Params");
+
+            Node ParamL = ParamList();
+
+            if (ParamL == null) return null;
+
+            n.Children.Add(ParamL);
+
+            return n;
+        }
+
+        private Node ParamList()
+        {
+            Node n = new Node("ParamList");
+
+            Node ParamNode = Param();
+
+            if (ParamNode == null) return null;
+
+            n.Children.Add(ParamNode);
+            n.Children.Add(ParamListDash());
+            return n;
+        }
+
+        private Node ParamListDash()
+        {
+            Node n = new Node("ParamListDash");
+            if (GetTokenType() == Token_Class.Coma)
+            {
+                n.Children.Add(match(Token_Class.Coma));
+                n.Children.Add(Param());
+                n.Children.Add(ParamListDash());
+            }
+
+            return n;
+
+        }
+
+        private Node Param()
+        {
+            Node n = new Node("Param");
+
+            Node dt = DataType();
+
+            if (dt == null) return null;
+
+
+            n.Children.Add(dt);
+            n.Children.Add(match(Token_Class.Identifier));
+            return n;
+
+        }
+
+        private Node DataType()
+        {
+            Node n = new Node("Datatype");
+
+            if (GetTokenType() == Token_Class.Int)
+            {
+                n.Children.Add(match(Token_Class.Int));
+            }
+            else if (GetTokenType() == Token_Class.Float)
+            {
+                n.Children.Add(match(Token_Class.Float));
+            }
+            else if (GetTokenType() == Token_Class.String)
+            {
+                n.Children.Add(match(Token_Class.String));
+            }
+            else
+            {
+                return null;
+            }
+
+            return n;
+
+        }
+        private Token_Class GetTokenType()
+        {
+            if (GetCurrentToken() == null) return Token_Class.Invalid;
+
+            return GetCurrentToken().token_type;
+        }
+        private Token GetCurrentToken()
+        {
+            if (InputPointer < TokenStream.Count) return TokenStream[InputPointer];
+            return null;
+        }
+        Node MainFun()
+        {
+            return null;
+        }
+
         Node Header()
         {
             Node header = new Node("Header");
@@ -91,7 +265,7 @@ namespace Tiny_Compiler
             else
             {
                 Errors.Error_List.Add("Parsing Error: Expected "
-                        + ExpectedToken.ToString()  + "\r\n");
+                        + ExpectedToken.ToString() + "\r\n");
                 InputPointer++;
                 return null;
             }
