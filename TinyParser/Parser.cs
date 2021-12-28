@@ -79,10 +79,21 @@ namespace Tiny_Compiler
 
             n.Children.Add(match(Token_Class.RightParentheses));
 
-            //n.Children.Add(CompoundStmts());
+            n.Children.Add(CompoundStmts());
 
             return n;
         }
+
+        Node MainFun()
+        {
+            Node fnMain = new Node("MainFunDecl");
+            if (fnMain != null)
+            {
+                fnMain.Children.Add(FunDecl());
+            }
+            return null;
+        }
+
 
         private Node CompoundStmts()
         {
@@ -90,35 +101,124 @@ namespace Tiny_Compiler
 
             n.Children.Add(match(Token_Class.LeftBraces));
 
-            n.Children.Add(Statments());
+            n.Children.Add(Statements());
 
             n.Children.Add(match(Token_Class.RightBraces));
 
             return n;
         }
 
-        private Node Statments()
+        private Node Statements()
         {
-            Node n = new Node("Statments");
-
-            n.Children.Add(Statment());
-
-            return null;
+            Node n = new Node("Statements");
+           
+            Node statement = Statement();
+            if (statement == null) return null;
+            n.Children.Add(statement);
+            n.Children.Add(StatementsDash());
+           
+            return n;
         }
 
-        private Node Statment()
+        private Node StatementsDash()
         {
-            Node n = new Node("Statment");
+            Node n = new Node("StatementsDash");
+            if(GetTokenType() == Token_Class.SemiColon) {
+                n.Children.Add(match(Token_Class.SemiColon));
+                n.Children.Add(Statement());
+                n.Children.Add(StatementsDash());
+            }
+            
+          
+            return n;
+        }
+
+        private Node Statement()
+        {
+            Node n = new Node("Statement");
 
             if (GetTokenType() == Token_Class.Read)
             {
-                
-            }else if (GetTokenType()==Token_Class.Write)
-            {
-
+                n.Children.Add(match(Token_Class.Read));
+                n.Children.Add(match(Token_Class.Identifier));
             }
+            else if (GetTokenType() == Token_Class.Write) 
+            {
+                n.Children.Add(match(Token_Class.Write));
+                n.Children.Add(StatementDDash());
+            }else if(GetTokenType() == Token_Class.Identifier)
+            {
+                n.Children.Add(match(Token_Class.Identifier));
+                n.Children.Add(StatementDash());
 
-            return null;
+            }else if(GetTokenType() == Token_Class.If)
+            {
+                n.Children.Add(match(Token_Class.If));
+                n.Children.Add(IfStatements());
+            }else if(GetTokenType() == Token_Class.Return)
+            {
+                n.Children.Add(match(Token_Class.Return));
+                n.Children.Add(StatementDDash());
+            }
+            return n;
+        }
+        private Node StatementDash()
+        {
+            Node n = new Node("StatementDash");
+            if(GetTokenType() == Token_Class.LeftParentheses)
+            {
+                n.Children.Add(match(Token_Class.LeftParentheses));
+                n.Children.Add(ArgList());
+                n.Children.Add(match(Token_Class.RightParentheses));
+            }
+            else
+            {
+                n.Children.Add(match(Token_Class.AssignmentOp));
+                n.Children.Add(StatementDDash());
+            }
+            return n;
+        }
+        private Node StatementDDash()
+        {
+            Node n = new Node("StatementDDash");
+            
+            if(GetTokenType() == Token_Class.String)
+            {
+                n.Children.Add(match(Token_Class.String));
+            }
+            else
+            {
+                n.Children.Add(Expression());
+            }
+            return n;
+        }
+        private Node IfStatements()
+        {
+            Node n = new Node("IfStatements");
+            // TODO: 
+            return n;
+        }
+        private Node ElseIFStatements()
+        {
+            Node n = new Node("ElseIfStatements");
+            // TODO: 
+
+            return n;
+        }
+        private Node ElseStatments()
+        {
+            Node n = new Node("ElseStatements");
+            // TODO: 
+
+            return n;
+        }
+
+        private Node Conditions()
+        {
+            Node n = new Node("Conditions");
+            // TODO: 
+
+            return n;
         }
 
         private Node Params()
@@ -175,6 +275,128 @@ namespace Tiny_Compiler
             return n;
 
         }
+        private Node ArgList()
+        {
+            Node n = new Node("ArgList");
+
+            Node ArgNode = Arg();
+
+            if (ArgNode == null) return null;
+
+            n.Children.Add(ArgNode);
+            n.Children.Add(ArgListDash());
+            return n;
+        }
+
+        private Node ArgListDash()
+        {
+            Node n = new Node("ArgListDash");
+            if (GetTokenType() == Token_Class.Coma)
+            {
+                n.Children.Add(match(Token_Class.Coma));
+                n.Children.Add(Arg());
+                n.Children.Add(ArgListDash());
+            }
+
+            return n;
+
+        }
+
+        private Node Arg()
+        {
+            Node n = new Node("Param");
+            Node exp =  Expression();
+            if (exp == null) return null;
+            n.Children.Add(exp);
+            return n;
+
+        }
+        private Node VarDecl()
+        {
+            return null;
+        }
+        private Node VarDeclList()
+        {
+            return null;
+        }
+        private Node Expression()
+        {
+            Node n = new Node("Expression");
+            Node term = Term();
+            if (term == null) return null;
+            n.Children.Add(term);
+            n.Children.Add(ExpressionDash());
+            return n;
+        }
+        private Node ExpressionDash()
+        {
+            Node n = new Node("ExpressionDash");
+            if(GetTokenType() == Token_Class.PlusOp)
+            {
+                n.Children.Add(match(Token_Class.PlusOp));
+                Console.WriteLine(GetTokenType());
+                n.Children.Add(Term());
+                n.Children.Add(ExpressionDash());
+
+            }else if(GetTokenType() == Token_Class.MinusOp)
+            {
+                n.Children.Add(match(Token_Class.MinusOp));
+                n.Children.Add(Term());
+                n.Children.Add(ExpressionDash());
+            }
+            return n;
+        }
+
+        private Node Term()
+        {
+            Node n = new Node("Term");
+            Node factor = Factor();
+            if (factor == null) return null;
+            n.Children.Add(factor);
+            n.Children.Add(TermDash());
+            return n;
+        }
+        private Node TermDash()
+        {
+            Node n = new Node("TermDash");
+            if(GetTokenType() == Token_Class.MultiplyOp)
+            {
+                n.Children.Add(match(Token_Class.MultiplyOp));
+                n.Children.Add(Factor());
+                n.Children.Add(TermDash());
+
+            }else if(GetTokenType() == Token_Class.DivideOp)
+            {
+                n.Children.Add(match(Token_Class.DivideOp));
+                n.Children.Add(Factor());
+                n.Children.Add(TermDash());
+            }
+            // return epsilon
+            return n;
+        }
+        private Node Factor()
+        {
+            Node n = new Node("Factor");
+            
+            Console.WriteLine(GetTokenType());
+            if (GetTokenType() == Token_Class.Number)
+            {
+                n.Children.Add(match(Token_Class.Number));
+               
+            }
+            else if (GetTokenType() == Token_Class.Identifier) 
+            {
+                n.Children.Add(match(Token_Class.Identifier));
+            }else if(GetTokenType() == Token_Class.LeftParentheses)
+            {
+                n.Children.Add(match(Token_Class.LeftParentheses));
+                n.Children.Add(Expression());
+                n.Children.Add(match(Token_Class.RightParentheses));
+            }
+            return n;
+        }
+
+
 
         private Node DataType()
         {
@@ -211,11 +433,7 @@ namespace Tiny_Compiler
             if (InputPointer < TokenStream.Count) return TokenStream[InputPointer];
             return null;
         }
-        Node MainFun()
-        {
-            return null;
-        }
-
+        
         Node Header()
         {
             Node header = new Node("Header");
