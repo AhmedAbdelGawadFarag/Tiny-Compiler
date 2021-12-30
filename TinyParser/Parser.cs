@@ -704,28 +704,7 @@ namespace Tiny_Compiler
             return null;
         }
 
-        Node Header()
-        {
-            Node header = new Node("Header");
-            // write your code here to check the header sructure
-            return header;
-        }
-        Node DeclSec()
-        {
-            Node declsec = new Node("DeclSec");
-            // write your code here to check atleast the declare sturcure 
-            // without adding procedures
-            return declsec;
-        }
-        Node Block()
-        {
-            Node block = new Node("block");
-            // write your code here to match statements
-            return block;
-        }
-
-        // Implement your logic here
-
+       
         public Node match(Token_Class ExpectedToken)
         {
 
