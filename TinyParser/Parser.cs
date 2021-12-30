@@ -169,6 +169,7 @@ namespace Tiny_Compiler
             Node n = new Node("Statement");
 
             Node VD = VarDecl();
+            Node RBT = RptStmt();
             if (GetTokenType() == Token_Class.Read)
             {
                 n.Children.Add(match(Token_Class.Read));
@@ -186,20 +187,37 @@ namespace Tiny_Compiler
             }
             else if (GetTokenType() == Token_Class.If)
             {
-               // n.Children.Add(match(Token_Class.If));
+                // n.Children.Add(match(Token_Class.If));
                 n.Children.Add(IfStatements());
                 n.Children.Add(match(Token_Class.End));
             }
-            else if (GetTokenType() == Token_Class.Repeat)
+            else if (RBT!=null)
+            {
+                n.Children.Add(RBT);
+            }
+            else if (VD != null)
+            {
+                n.Children.Add(VD);
+            }
+
+            return n;
+
+        }
+
+        private Node RptStmt()
+        {
+            Node n = new Node("RptStmt");
+             if (GetTokenType() == Token_Class.Repeat)
             {
                 n.Children.Add(match(Token_Class.Repeat));
                 n.Children.Add(Statements());
                 n.Children.Add(match(Token_Class.Until));
                 n.Children.Add(Conditions());
+                n.Children.Add(Statements());
             }
-            else if (VD != null)
+            else
             {
-                n.Children.Add(VD);
+                return null;
             }
 
             return n;
@@ -235,11 +253,10 @@ namespace Tiny_Compiler
         private Node StatementDash()
         {
             Node n = new Node("StatementDash");
-            if (GetTokenType() == Token_Class.LeftParentheses)
+            Node fcall = FunctionCall();
+            if (fcall != null)
             {
-                n.Children.Add(match(Token_Class.LeftParentheses));
-                n.Children.Add(ArgList());
-                n.Children.Add(match(Token_Class.RightParentheses));
+                n.Children.Add(fcall);
             }
             else
             {
@@ -248,11 +265,31 @@ namespace Tiny_Compiler
             }
             return n;
         }
+
+        private Node FunctionCall()
+        {
+            Node n = new Node("FunctionCall");
+
+            if (GetTokenType() == Token_Class.LeftParentheses)
+            {
+                n.Children.Add(match(Token_Class.LeftParentheses));
+                n.Children.Add(ArgList());
+                n.Children.Add(match(Token_Class.RightParentheses));
+            }
+            else
+            {
+                return null;
+            }
+
+            return n;
+
+        }
+
         private Node StatementDDash()
         {
             Node n = new Node("StatementDDash");
 
-            
+
 
             if (GetTokenType() == Token_Class.String)
             {
@@ -281,8 +318,8 @@ namespace Tiny_Compiler
         {
             Node n = new Node("ElseIfStatements");
             n.Children.Add(ElseIFStatementsDash());
-            
-            
+
+
             return n;
         }
         private Node ElseIFStatementsDash()
@@ -300,18 +337,18 @@ namespace Tiny_Compiler
 
                 n.Children.Add(ElseIFStatementsDash());
             }
-            
+
 
             return n;
         }
         private Node ElseStatments()
         {
             Node n = new Node("ElseStatements");
-            if(GetTokenType() == Token_Class.Else)
+            if (GetTokenType() == Token_Class.Else)
             {
                 n.Children.Add(match(Token_Class.Else));
                 n.Children.Add(Statements());
-            } 
+            }
 
             return n;
         }
@@ -329,11 +366,11 @@ namespace Tiny_Compiler
         {
             Node n = new Node("ConditionsDash");
 
-            if(GetTokenType() == Token_Class.IsEqualOp)
+            if (GetTokenType() == Token_Class.IsEqualOp)
             {
                 n.Children.Add(match(Token_Class.IsEqualOp));
             }
-            else if(GetTokenType() == Token_Class.NotEqualOp)
+            else if (GetTokenType() == Token_Class.NotEqualOp)
             {
                 n.Children.Add(match(Token_Class.NotEqualOp));
             }
@@ -366,7 +403,7 @@ namespace Tiny_Compiler
                 n.Children.Add(Conditions());
             }
 
-            
+
 
             return n;
         }
@@ -467,7 +504,7 @@ namespace Tiny_Compiler
 
             Node Dt = DataType();
 
-            if (Dt == null) return null; 
+            if (Dt == null) return null;
 
             n.Children.Add(DataType());
             n.Children.Add(VarDeclList());
@@ -489,14 +526,14 @@ namespace Tiny_Compiler
         {
             Node n = new Node("VarAssign");
 
-           
+
             if (GetTokenType() == Token_Class.AssignmentOp)
             {
-             
-             //   n.Children.Add(match(Token_Class.SemiColon));
+
+                //   n.Children.Add(match(Token_Class.SemiColon));
                 n.Children.Add(match(Token_Class.AssignmentOp));
                 n.Children.Add(StatementDDash());
-                
+
             }
 
             return n;
@@ -510,7 +547,7 @@ namespace Tiny_Compiler
             n.Children.Add(VarHeader());
             n.Children.Add(VarDeclListDash());
 
-           return n;
+            return n;
         }
 
         private Node VarDeclListDash()
@@ -527,13 +564,7 @@ namespace Tiny_Compiler
             return n;
         }
 
-        private Node AssignVar()
-        {
-            Node n = new Node("AssignVar");
-            Node st = StatementDDash();
-            return n;
-        }
-
+       
         private Node Expression()
         {
             Node n = new Node("Expression");
@@ -596,6 +627,9 @@ namespace Tiny_Compiler
             Node n = new Node("Factor");
 
             Console.WriteLine(GetTokenType());
+
+            Node fn = FunctionCall();
+
             if (GetTokenType() == Token_Class.Number)
             {
                 n.Children.Add(match(Token_Class.Number));
@@ -604,6 +638,7 @@ namespace Tiny_Compiler
             else if (GetTokenType() == Token_Class.Identifier)
             {
                 n.Children.Add(match(Token_Class.Identifier));
+                n.Children.Add(FactorDash());
             }
             else if (GetTokenType() == Token_Class.LeftParentheses)
             {
@@ -611,10 +646,27 @@ namespace Tiny_Compiler
                 n.Children.Add(Expression());
                 n.Children.Add(match(Token_Class.RightParentheses));
             }
+            else if (fn != null)
+            {
+                n.Children.Add(fn);
+            }
             return n;
         }
 
+        private Node FactorDash()
+        {
+            Node n = new Node("factore Dash");
 
+            Node fn = FunctionCall();
+
+            if (fn != null)
+            {
+                n.Children.Add(fn);
+            }
+
+            return n;
+
+        }
 
         private Node DataType()
         {
