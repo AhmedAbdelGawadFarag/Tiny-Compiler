@@ -186,9 +186,18 @@ namespace Tiny_Compiler
             }
             else if (GetTokenType() == Token_Class.If)
             {
-                n.Children.Add(match(Token_Class.If));
+               // n.Children.Add(match(Token_Class.If));
                 n.Children.Add(IfStatements());
-            }else if (VD != null)
+                n.Children.Add(match(Token_Class.End));
+            }
+            else if (GetTokenType() == Token_Class.Repeat)
+            {
+                n.Children.Add(match(Token_Class.Repeat));
+                n.Children.Add(Statements());
+                n.Children.Add(match(Token_Class.Until));
+                n.Children.Add(Conditions());
+            }
+            else if (VD != null)
             {
                 n.Children.Add(VD);
             }
@@ -258,20 +267,51 @@ namespace Tiny_Compiler
         private Node IfStatements()
         {
             Node n = new Node("IfStatements");
-            // TODO: 
+            n.Children.Add(match(Token_Class.If));
+            n.Children.Add(Conditions());
+
+            n.Children.Add(match(Token_Class.Then));
+            n.Children.Add(Statements());
+            n.Children.Add(ElseIFStatements());
+            n.Children.Add(ElseStatments());
+
             return n;
         }
         private Node ElseIFStatements()
         {
             Node n = new Node("ElseIfStatements");
-            // TODO: 
+            n.Children.Add(ElseIFStatementsDash());
+            
+            
+            return n;
+        }
+        private Node ElseIFStatementsDash()
+        {
+            Node n = new Node("ElseIfStatementsDash");
+            Node statements = Statements();
+            if (GetTokenType() == Token_Class.ElseIf)
+            {
+                n.Children.Add(match(Token_Class.ElseIf));
+                n.Children.Add(Conditions());
+                n.Children.Add(match(Token_Class.Then));
+
+                if (statements != null)
+                    n.Children.Add(Statements());
+
+                n.Children.Add(ElseIFStatementsDash());
+            }
+            
 
             return n;
         }
         private Node ElseStatments()
         {
             Node n = new Node("ElseStatements");
-            // TODO: 
+            if(GetTokenType() == Token_Class.Else)
+            {
+                n.Children.Add(match(Token_Class.Else));
+                n.Children.Add(Statements());
+            } 
 
             return n;
         }
@@ -279,7 +319,54 @@ namespace Tiny_Compiler
         private Node Conditions()
         {
             Node n = new Node("Conditions");
-            // TODO: 
+
+            n.Children.Add(Expression());
+            n.Children.Add(ConditionsDash());
+
+            return n;
+        }
+        private Node ConditionsDash()
+        {
+            Node n = new Node("ConditionsDash");
+
+            if(GetTokenType() == Token_Class.IsEqualOp)
+            {
+                n.Children.Add(match(Token_Class.IsEqualOp));
+            }
+            else if(GetTokenType() == Token_Class.NotEqualOp)
+            {
+                n.Children.Add(match(Token_Class.NotEqualOp));
+            }
+            else if (GetTokenType() == Token_Class.LessThanOp)
+            {
+                n.Children.Add(match(Token_Class.LessThanOp));
+            }
+            else if (GetTokenType() == Token_Class.GreaterThanOp)
+            {
+                n.Children.Add(match(Token_Class.GreaterThanOp));
+            }
+
+            n.Children.Add(Expression());
+            n.Children.Add(ConditionsDashDash());
+
+            return n;
+        }
+        private Node ConditionsDashDash()
+        {
+            Node n = new Node("ConditionsDashDash");
+
+            if (GetTokenType() == Token_Class.AndOp)
+            {
+                n.Children.Add(match(Token_Class.AndOp));
+                n.Children.Add(Conditions());
+            }
+            else if (GetTokenType() == Token_Class.OrOp)
+            {
+                n.Children.Add(match(Token_Class.OrOp));
+                n.Children.Add(Conditions());
+            }
+
+            
 
             return n;
         }
@@ -603,11 +690,13 @@ namespace Tiny_Compiler
 
                 else
                 {
+                    Console.WriteLine(InputPointer);
                     Errors.Error_List.Add("Parsing Error: Expected "
                         + ExpectedToken.ToString() + " and " +
                         TokenStream[InputPointer].token_type.ToString() +
                         "  found\r\n");
                     InputPointer++;
+
                     return null;
                 }
             }
