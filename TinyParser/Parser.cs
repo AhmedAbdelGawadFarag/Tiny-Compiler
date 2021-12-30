@@ -36,6 +36,7 @@ namespace Tiny_Compiler
             Node program = new Node("Program");
             program.Children.Add(FunDecls());
             program.Children.Add(MainFun());
+            program.Children.Add(match(Token_Class.EndOfFile));
             return program;
         }
         Node FunDecls()
@@ -71,6 +72,13 @@ namespace Tiny_Compiler
 
             if (Dt == null) return null;
 
+            // if the token is Main 
+            if (GetTokenType() == Token_Class.Main)
+            {
+                InputPointer--;
+                return null;
+            }
+
             n.Children.Add(Dt);
             n.Children.Add(match(Token_Class.Identifier));
             n.Children.Add(match(Token_Class.LeftParentheses));
@@ -87,11 +95,19 @@ namespace Tiny_Compiler
         Node MainFun()
         {
             Node fnMain = new Node("MainFunDecl");
-            if (fnMain != null)
-            {
-                fnMain.Children.Add(FunDecl());
-            }
-            return null;
+
+            Node DT = DataType();
+            if (DT == null) return null;
+
+
+            fnMain.Children.Add(DT);
+            fnMain.Children.Add(match(Token_Class.Main));
+            fnMain.Children.Add(match(Token_Class.LeftParentheses));
+            fnMain.Children.Add(match(Token_Class.RightParentheses));
+            fnMain.Children.Add(CompoundStmts());
+
+
+            return fnMain;
         }
 
 
@@ -103,7 +119,21 @@ namespace Tiny_Compiler
 
             n.Children.Add(Statements());
 
+            n.Children.Add(ReturnStmt());
+
             n.Children.Add(match(Token_Class.RightBraces));
+
+
+            return n;
+        }
+
+        private Node ReturnStmt()
+        {
+            Node n = new Node("Return Stmt");
+
+            n.Children.Add(match(Token_Class.Return));
+            n.Children.Add(StatementDDash());
+            n.Children.Add(match(Token_Class.SemiColon));
 
             return n;
         }
@@ -111,25 +141,26 @@ namespace Tiny_Compiler
         private Node Statements()
         {
             Node n = new Node("Statements");
-           
+
             Node statement = Statement();
             if (statement == null) return null;
             n.Children.Add(statement);
             n.Children.Add(StatementsDash());
-           
+
             return n;
         }
 
         private Node StatementsDash()
         {
             Node n = new Node("StatementsDash");
-            if(GetTokenType() == Token_Class.SemiColon) {
+            if (GetTokenType() == Token_Class.SemiColon)
+            {
                 n.Children.Add(match(Token_Class.SemiColon));
                 n.Children.Add(Statement());
                 n.Children.Add(StatementsDash());
             }
-            
-          
+
+
             return n;
         }
 
@@ -137,35 +168,65 @@ namespace Tiny_Compiler
         {
             Node n = new Node("Statement");
 
+            Node VD = VarDecl();
             if (GetTokenType() == Token_Class.Read)
             {
                 n.Children.Add(match(Token_Class.Read));
                 n.Children.Add(match(Token_Class.Identifier));
             }
-            else if (GetTokenType() == Token_Class.Write) 
+            else if (GetTokenType() == Token_Class.Write)
             {
-                n.Children.Add(match(Token_Class.Write));
-                n.Children.Add(StatementDDash());
-            }else if(GetTokenType() == Token_Class.Identifier)
+                n.Children.Add(WriteStatment());
+            }
+            else if (GetTokenType() == Token_Class.Identifier)
             {
                 n.Children.Add(match(Token_Class.Identifier));
                 n.Children.Add(StatementDash());
 
-            }else if(GetTokenType() == Token_Class.If)
+            }
+            else if (GetTokenType() == Token_Class.If)
             {
                 n.Children.Add(match(Token_Class.If));
                 n.Children.Add(IfStatements());
-            }else if(GetTokenType() == Token_Class.Return)
+            }else if (VD != null)
             {
-                n.Children.Add(match(Token_Class.Return));
-                n.Children.Add(StatementDDash());
+                n.Children.Add(VD);
             }
+
             return n;
         }
+
+        private Node WriteStatment()
+        {
+            Node n = new Node("WriteStatment");
+
+            n.Children.Add(match(Token_Class.Write));
+            n.Children.Add(WriteStatmentDash());
+
+            return n;
+
+        }
+
+        private Node WriteStatmentDash()
+        {
+            Node n = new Node("WriteStatmentDash");
+
+            if (GetTokenType() == Token_Class.Endl)
+            {
+                n.Children.Add(match(Token_Class.Endl));
+            }
+            else
+            {
+                n.Children.Add(StatementDDash());
+            }
+
+            return n;
+        }
+
         private Node StatementDash()
         {
             Node n = new Node("StatementDash");
-            if(GetTokenType() == Token_Class.LeftParentheses)
+            if (GetTokenType() == Token_Class.LeftParentheses)
             {
                 n.Children.Add(match(Token_Class.LeftParentheses));
                 n.Children.Add(ArgList());
@@ -181,8 +242,10 @@ namespace Tiny_Compiler
         private Node StatementDDash()
         {
             Node n = new Node("StatementDDash");
+
             
-            if(GetTokenType() == Token_Class.String)
+
+            if (GetTokenType() == Token_Class.String)
             {
                 n.Children.Add(match(Token_Class.String));
             }
@@ -305,7 +368,7 @@ namespace Tiny_Compiler
         private Node Arg()
         {
             Node n = new Node("Param");
-            Node exp =  Expression();
+            Node exp = Expression();
             if (exp == null) return null;
             n.Children.Add(exp);
             return n;
@@ -313,12 +376,77 @@ namespace Tiny_Compiler
         }
         private Node VarDecl()
         {
-            return null;
+            Node n = new Node("VarDecl");
+
+            Node Dt = DataType();
+
+            if (Dt == null) return null; 
+
+            n.Children.Add(DataType());
+            n.Children.Add(VarDeclList());
+
+            return n;
         }
+
+        private Node VarHeader()
+        {
+            Node n = new Node("VarHeader");
+
+            n.Children.Add(match(Token_Class.Identifier));
+            n.Children.Add(VarAssign());
+
+            return n;
+        }
+
+        private Node VarAssign()
+        {
+            Node n = new Node("VarAssign");
+
+           
+            if (GetTokenType() == Token_Class.AssignmentOp)
+            {
+             
+             //   n.Children.Add(match(Token_Class.SemiColon));
+                n.Children.Add(match(Token_Class.AssignmentOp));
+                n.Children.Add(StatementDDash());
+                
+            }
+
+            return n;
+
+        }
+
         private Node VarDeclList()
         {
-            return null;
+            Node n = new Node("VarDeclList");
+
+            n.Children.Add(VarHeader());
+            n.Children.Add(VarDeclListDash());
+
+           return n;
         }
+
+        private Node VarDeclListDash()
+        {
+            Node n = new Node("VarDecListDash");
+
+            if (GetTokenType() == Token_Class.Coma)
+            {
+                n.Children.Add(match(Token_Class.Coma));
+                n.Children.Add(VarHeader());
+                n.Children.Add(VarDeclListDash());
+            }
+
+            return n;
+        }
+
+        private Node AssignVar()
+        {
+            Node n = new Node("AssignVar");
+            Node st = StatementDDash();
+            return n;
+        }
+
         private Node Expression()
         {
             Node n = new Node("Expression");
@@ -331,14 +459,15 @@ namespace Tiny_Compiler
         private Node ExpressionDash()
         {
             Node n = new Node("ExpressionDash");
-            if(GetTokenType() == Token_Class.PlusOp)
+            if (GetTokenType() == Token_Class.PlusOp)
             {
                 n.Children.Add(match(Token_Class.PlusOp));
                 Console.WriteLine(GetTokenType());
                 n.Children.Add(Term());
                 n.Children.Add(ExpressionDash());
 
-            }else if(GetTokenType() == Token_Class.MinusOp)
+            }
+            else if (GetTokenType() == Token_Class.MinusOp)
             {
                 n.Children.Add(match(Token_Class.MinusOp));
                 n.Children.Add(Term());
@@ -359,13 +488,14 @@ namespace Tiny_Compiler
         private Node TermDash()
         {
             Node n = new Node("TermDash");
-            if(GetTokenType() == Token_Class.MultiplyOp)
+            if (GetTokenType() == Token_Class.MultiplyOp)
             {
                 n.Children.Add(match(Token_Class.MultiplyOp));
                 n.Children.Add(Factor());
                 n.Children.Add(TermDash());
 
-            }else if(GetTokenType() == Token_Class.DivideOp)
+            }
+            else if (GetTokenType() == Token_Class.DivideOp)
             {
                 n.Children.Add(match(Token_Class.DivideOp));
                 n.Children.Add(Factor());
@@ -377,17 +507,18 @@ namespace Tiny_Compiler
         private Node Factor()
         {
             Node n = new Node("Factor");
-            
+
             Console.WriteLine(GetTokenType());
             if (GetTokenType() == Token_Class.Number)
             {
                 n.Children.Add(match(Token_Class.Number));
-               
+
             }
-            else if (GetTokenType() == Token_Class.Identifier) 
+            else if (GetTokenType() == Token_Class.Identifier)
             {
                 n.Children.Add(match(Token_Class.Identifier));
-            }else if(GetTokenType() == Token_Class.LeftParentheses)
+            }
+            else if (GetTokenType() == Token_Class.LeftParentheses)
             {
                 n.Children.Add(match(Token_Class.LeftParentheses));
                 n.Children.Add(Expression());
@@ -433,7 +564,7 @@ namespace Tiny_Compiler
             if (InputPointer < TokenStream.Count) return TokenStream[InputPointer];
             return null;
         }
-        
+
         Node Header()
         {
             Node header = new Node("Header");
