@@ -229,7 +229,7 @@ namespace Tiny_Compiler
 
             n.Children.Add(match(Token_Class.Write));
             n.Children.Add(WriteStatmentDash());
-
+                
             return n;
 
         }
@@ -241,10 +241,12 @@ namespace Tiny_Compiler
             if (GetTokenType() == Token_Class.Endl)
             {
                 n.Children.Add(match(Token_Class.Endl));
+                n.Children.Add(match(Token_Class.SemiColon));
             }
             else
             {
                 n.Children.Add(StatementDDash());
+                n.Children.Add(match(Token_Class.SemiColon));
             }
 
             return n;

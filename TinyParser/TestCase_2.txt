@@ -14,7 +14,7 @@ repeat
 
 fact := fact * x;
 
-x := x – 1;
+x := x - 1;
 
 until x = 0
 
