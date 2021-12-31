@@ -153,14 +153,15 @@ namespace Tiny_Compiler
         private Node StatementsDash()
         {
             Node n = new Node("StatementsDash");
-            if (GetTokenType() == Token_Class.SemiColon)
+
+            Node St = Statement();
+
+            if (St != null)
             {
-                n.Children.Add(match(Token_Class.SemiColon));
                 n.Children.Add(Statement());
                 n.Children.Add(StatementsDash());
             }
-
-
+         
             return n;
         }
 
@@ -170,19 +171,23 @@ namespace Tiny_Compiler
 
             Node VD = VarDecl();
             Node RBT = RptStmt();
+
             if (GetTokenType() == Token_Class.Read)
             {
                 n.Children.Add(match(Token_Class.Read));
                 n.Children.Add(match(Token_Class.Identifier));
+                n.Children.Add(match(Token_Class.SemiColon));
             }
             else if (GetTokenType() == Token_Class.Write)
             {
                 n.Children.Add(WriteStatment());
+                n.Children.Add(match(Token_Class.SemiColon));
             }
             else if (GetTokenType() == Token_Class.Identifier)
             {
                 n.Children.Add(match(Token_Class.Identifier));
                 n.Children.Add(StatementDash());
+                n.Children.Add(match(Token_Class.SemiColon));
 
             }
             else if (GetTokenType() == Token_Class.If)
@@ -198,6 +203,11 @@ namespace Tiny_Compiler
             else if (VD != null)
             {
                 n.Children.Add(VD);
+                n.Children.Add(match(Token_Class.SemiColon));
+            }
+            else
+            {
+                return null;
             }
 
             return n;
@@ -213,7 +223,6 @@ namespace Tiny_Compiler
                 n.Children.Add(Statements());
                 n.Children.Add(match(Token_Class.Until));
                 n.Children.Add(Conditions());
-                n.Children.Add(Statements());
             }
             else
             {
@@ -241,12 +250,10 @@ namespace Tiny_Compiler
             if (GetTokenType() == Token_Class.Endl)
             {
                 n.Children.Add(match(Token_Class.Endl));
-                n.Children.Add(match(Token_Class.SemiColon));
             }
             else
             {
                 n.Children.Add(StatementDDash());
-                n.Children.Add(match(Token_Class.SemiColon));
             }
 
             return n;
