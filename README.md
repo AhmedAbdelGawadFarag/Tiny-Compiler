@@ -31,6 +31,7 @@
       <ul>
         <li><a href="#language-Description">Language Description</a></li>
         <li><a href="#language-cfg">Language CFG</a></li>
+        <li><a href="#code-samples">Code Samples</a></li>
       </ul>
     </li>
   
@@ -179,9 +180,101 @@ To get a local copy up and running follow these simple example steps.
 
 29- Arg -> Expression
 
-30- Comment -> /* String */
 
+<!--code-samples-->
+### Code Samples
 
+#### Sample 1
+```cpp
+int sum(int a, int b)
+{
+	return a + b;
+}
+int main()
+{
+	int val, counter;
+	read val;
+	counter := 0;
+	repeat                                                                                
+		val := val - 1;
+		write "Iteration number [";
+		write counter;
+		write "] the value of x = ";
+		write val;
+		write endl;                          
+		counter := counter+1;                                                      
+	until val = 1
+	write endl;
+	string s := "number of Iterations = ";
+	write s; 
+	counter := counter-1;
+	write counter;
+	/* complicated equation */    
+	float z1 := 3*2*(2+1)/2-5.3;
+	z1 := z1 + sum(a,y);
+	if  z1 > 5 || z1 < counter && z1 = 1 
+	then 
+		write z1;
+	elseif z1 < 5 
+	then
+		z1 := 5;
+	else
+	    z1 := counter;
+	end
+	return 0;
+}
+```
+
+### Sample 2
+
+```cpp
+/* Sample program in Tiny language – computes factorial*/
+int main()
+{
+	int x;
+	read x; /*input an integer*/
+	if x > 0 /*don’t compute if x <= 0 */
+	then 
+		int fact := 1;
+		repeat
+			fact := fact * x;
+			x := x – 1;
+		until x = 0
+		write fact; /*output factorial of x*/
+	end
+	return 0;
+}
+```
+### Sample 3
+```cpp
+  int run(float y)
+  {
+  if x<>y && x>0 then
+  write endl;
+  repeat
+  x:=x-1;
+  until x >0
+  elseif x>y then
+  int s;
+  read s;
+  return y;
+  else
+  write x;
+  end
+  return "run function";
+  }
+  int main()
+  {
+  write "Hello world";
+  float y;
+  read y;
+  int x;
+  x := run(y);
+  write x;
+  write endl;
+  return 0;
+  }
+```
 
 
 
