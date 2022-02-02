@@ -21,7 +21,7 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
+      <a href="#about-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
       </ul>
@@ -29,7 +29,7 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#language-Description">Language Description</a></li>
+        <li><a href="#language-description">Language Description</a></li>
         <li><a href="#language-cfg">Language CFG</a></li>
         <li><a href="#code-samples">Code Samples</a></li>
       </ul>
@@ -39,23 +39,32 @@
 </details>
 
 
-
 <!-- ABOUT THE PROJECT -->
+<h4 id="about-project"></h4>
 
 ## About The Project
+
 A program in TINY consists of a set of functions (any number of functions and ends with a main function),
 each function is a sequence of statements including (declaration, assignment, write, read, if, repeat, function, comment, …)
 each statement consists of (number, string, identifier, expression, condition, …).
 
-### Built With
 
+<h4 id="built-with"></h4>
+
+### Built With
 * [dotnet 4.7 - winforms](https://docs.microsoft.com/en-us/dotnet/)
+
+
+<h4 id="getting-started"></h4>
 
 <!-- GETTING STARTED -->
 # Getting Started
 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
+
+
+<h4 id="language-description"></h4>
 
 <!--Language-Description -->
 ### Language Description
@@ -91,6 +100,8 @@ To get a local copy up and running follow these simple example steps.
 - Function_Statement: starts with Function_Declaration followed by Function_Body
 - Main_Function: starts with Datatype followed by reserved keyword “main” then “()” followed by Function_Body
 - Program: has zero or more Function_Statement followed by Main_Function
+
+<h4 id="language-cfg"></h4>
 
 <!--language-cfg-->
 ### Language CFG
@@ -180,6 +191,7 @@ To get a local copy up and running follow these simple example steps.
 
 29- Arg -> Expression
 
+<h4 id="code-samples"></h4>
 
 <!--code-samples-->
 ### Code Samples
